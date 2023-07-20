@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const URL_CLIENT = "http://localhost:3000";
+const URL_CLIENT = "https://chat-app-fe-kaoj.onrender.com";
 const {
   responseSuccessWithData,
   responseInValid,
