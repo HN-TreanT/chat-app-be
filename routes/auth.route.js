@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const URL_CLIENT = "http://localhost:3000";
 const {
   responseSuccessWithData,
   responseInValid,
@@ -20,9 +21,7 @@ router.get(
     })(req, res, next);
   },
   (req, res) => {
-    res.redirect(
-      `${process.env.URL_CLIENT}/login-gg-fb/${req.user.emails[0].value}/${req.user.tokenLogin}`
-    );
+    res.redirect(`${URL_CLIENT}/login-gg-fb/${req.user.emails[0].value}/${req.user.tokenLogin}`);
   }
 );
 
@@ -39,9 +38,7 @@ router.get(
     })(req, res, next);
   },
   (req, res) => {
-    res.redirect(
-      `${process.env.URL_CLIENT}/login-gg-fb/${req.user.id}@gmail.com/${req.user.tokenLogin}`
-    );
+    res.redirect(`${URL_CLIENT}/login-gg-fb/${req.user.id}@gmail.com/${req.user.tokenLogin}`);
   }
 );
 
