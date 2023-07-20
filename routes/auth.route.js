@@ -1,5 +1,6 @@
 const router = require("express").Router();
-const URL_CLIENT = "https://chat-app-fe-kaoj.onrender.com";
+// const URL_CLIENT = "https://chat-app-fe-kaoj.onrender.com";
+const URL_CLIENT = "https://chat-app-fe-gamma.vercel.app";
 const {
   responseSuccessWithData,
   responseInValid,
