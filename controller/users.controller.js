@@ -21,24 +21,28 @@ let hashUserPassword = (password) => {
   });
 };
 const getAll = async (req, res) => {
-  let pageSize;
-  let page;
-  pageSize = req.query.pageSize;
-  page = req.query.page;
-  if (!req.query.pageSize || !req.query.page) {
-    pageSize = 1000;
-    page = 1;
-  }
-  if (!req.query.search) {
-    req.query.search = "";
-  }
-  const users = await User.find({
-    displayName: new RegExp(req.query.search, "i"),
-  })
-    .skip(pageSize * (page - 1))
-    .limit(pageSize);
+  try {
+    let pageSize;
+    let page;
+    pageSize = req.query.pageSize;
+    page = req.query.page;
+    if (!req.query.pageSize || !req.query.page) {
+      pageSize = 1000;
+      page = 1;
+    }
+    if (!req.query.search) {
+      req.query.search = "";
+    }
+    const users = await User.find({
+      displayName: new RegExp(req.query.search, "i"),
+    })
+      .skip(pageSize * (page - 1))
+      .limit(pageSize);
 
-  return responseSuccessWithData({ res, data: users });
+    return responseSuccessWithData({ res, data: users });
+  } catch (err) {
+    return responseServerError({ res, err: err.message });
+  }
 };
 
 const editUser = async (req, res) => {
