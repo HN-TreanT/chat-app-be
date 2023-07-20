@@ -85,91 +85,113 @@ io.on("connection", async (socket) => {
     });
   }
   socket.on("send_friendly_request", async function (data) {
-    const { sender, recipient } = data;
-    const userRecipient = await User.findById(recipient);
-    const userSender = await User.findById(sender);
-    const dt = { ...data, user: userSender };
-    socket.to(userRecipient.socket_id).emit("received_friendly_request", dt);
+    try {
+      const { sender, recipient } = data;
+      const userRecipient = await User.findById(recipient);
+      const userSender = await User.findById(sender);
+      const dt = { ...data, user: userSender };
+      socket.to(userRecipient.socket_id).emit("received_friendly_request", dt);
+    } catch (err) {
+      console.log(err);
+    }
   });
   //accept friend request
   socket.on("accept_friendly_request", async function (data) {
-    const { sender, recipient } = data;
-    const userSender = await User.findById(sender);
-    const userRecipient = await User.findById(recipient);
-    if (!userSender.friends.includes(recipient)) {
-      userSender.friends.push(recipient);
-    }
+    try {
+      const { sender, recipient } = data;
+      const userSender = await User.findById(sender);
+      const userRecipient = await User.findById(recipient);
+      if (!userSender.friends.includes(recipient)) {
+        userSender.friends.push(recipient);
+      }
 
-    if (!userRecipient.friends.includes(sender)) {
-      userRecipient.friends.push(sender);
-    }
-    await userSender.save({ new: true, validateModifiedOnly: true });
-    await userRecipient.save({ new: true, validateModifiedOnly: true });
-    const existing_conversations = await Message.find({
-      participants: { $size: 2, $all: [userSender._id, userRecipient._id] },
-    });
-    if (existing_conversations.length === 0) {
-      await Message.create({
-        participants: [userSender._id, userRecipient._id],
+      if (!userRecipient.friends.includes(sender)) {
+        userRecipient.friends.push(sender);
+      }
+      await userSender.save({ new: true, validateModifiedOnly: true });
+      await userRecipient.save({ new: true, validateModifiedOnly: true });
+      const existing_conversations = await Message.find({
+        participants: { $size: 2, $all: [userSender._id, userRecipient._id] },
       });
+      if (existing_conversations.length === 0) {
+        await Message.create({
+          participants: [userSender._id, userRecipient._id],
+        });
+      }
+      socket.emit("accept_success", "success");
+      socket.to(userSender.socket_id).emit("accept_success", "success");
+    } catch (err) {
+      console.log(err);
     }
-    socket.emit("accept_success", "success");
-    socket.to(userSender.socket_id).emit("accept_success", "success");
   });
   socket.on("start_conversation", async function (data) {
-    const { to, from } = data;
+    try {
+      const { to, from } = data;
 
-    //check existing conversation
-    const existing_conversations = await Message.find({
-      participants: { $size: 2, $all: [to, from] },
-    }).select(["_id", "participants"]);
-    if (existing_conversations.length === 0) {
-      let new_chat = await Message.create({
-        participants: [to, from],
+      //check existing conversation
+      const existing_conversations = await Message.find({
+        participants: { $size: 2, $all: [to, from] },
       }).select(["_id", "participants"]);
-      socket.emit("start_chat", new_chat);
-      ///test
-      socket.join(new_chat._id);
-      //////
-    } else {
-      socket.emit("start_chat", existing_conversations[0]);
-      ///tets
-      socket.join(existing_conversations[0]._id);
-      /////
+      if (existing_conversations.length === 0) {
+        let new_chat = await Message.create({
+          participants: [to, from],
+        }).select(["_id", "participants"]);
+        socket.emit("start_chat", new_chat);
+        ///test
+        socket.join(new_chat._id);
+        //////
+      } else {
+        socket.emit("start_chat", existing_conversations[0]);
+        ///tets
+        socket.join(existing_conversations[0]._id);
+        /////
+      }
+    } catch (err) {
+      console.log(err);
     }
   });
   socket.on("send_message", async function (data) {
-    const { conversation_id, to, from, message, type } = data;
-    const conversation = await Message.findById(conversation_id);
-    const to_user = await User.findById(to);
-    const from_user = await User.findById(from);
-    const new_chat = {
-      to: to,
-      from: from,
-      type: type,
-      created_at: Date.now(),
-      text: message,
-    };
-    conversation.messages.push(new_chat);
-    await conversation.save({ new: true, validateModifiedOnly: true });
+    try {
+      const { conversation_id, to, from, message, type } = data;
+      const conversation = await Message.findById(conversation_id);
+      const to_user = await User.findById(to);
+      const from_user = await User.findById(from);
+      const new_chat = {
+        to: to,
+        from: from,
+        type: type,
+        created_at: Date.now(),
+        text: message,
+      };
+      if (conversation) {
+        conversation?.messages.push(new_chat);
+        await conversation.save({ new: true, validateModifiedOnly: true });
 
-    socket.emit("new_message", {
-      conversation_id,
-      message: new_chat,
-    });
-    socket.to(from_user.socket_id).emit("new_message", {
-      conversation_id,
-      message: new_chat,
-    });
+        socket.emit("new_message", {
+          conversation_id,
+          message: new_chat,
+        });
+        socket.to(from_user.socket_id).emit("new_message", {
+          conversation_id,
+          message: new_chat,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
   });
   //////////////////////////////video calll
   socket.on("calling", async function (data) {
-    const caller = await User.findById(data.caller);
-    const reciever = await User.findById(data.reciever);
-    socket.to(reciever.socket_id).emit("hey", {
-      roomId: data.roomId,
-      caller: caller,
-    });
+    try {
+      const caller = await User.findById(data.caller);
+      const reciever = await User.findById(data.reciever);
+      socket.to(reciever.socket_id).emit("hey", {
+        roomId: data.roomId,
+        caller: caller,
+      });
+    } catch (err) {
+      console.log(err);
+    }
   });
   socket.on("join room", (roomID) => {
     if (rooms[roomID]) {
@@ -197,8 +219,12 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("finish-call", async (data) => {
-    const user = await User.findById(data.userCalling);
-    socket.to(user.socket_id).emit("finish-success", "success");
+    try {
+      const user = await User.findById(data.userCalling);
+      socket.to(user.socket_id).emit("finish-success", "success");
+    } catch (err) {
+      console.log(err);
+    }
   });
 
   ///socket off
