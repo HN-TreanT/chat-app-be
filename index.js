@@ -7,22 +7,15 @@ const cors = require("cors");
 const User = require("./models/users");
 const Message = require("./models/messages");
 const { responseServerError } = require("./helper/ResponseRequests");
-const authRoute = require("./routes/auth.route");
-const VideoCall = require("./models/videoCall");
-// const { Server } = require("socket.io");
-// const http = require("http");
+
+const { Server } = require("socket.io");
+const http = require("http");
 require("dotenv").config();
 require("./passport");
 const port = process.env.PORT || 3000;
 const app = express();
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
-// const io = require("socket.io")(server, {
-//   cors: {
-//     origin: "*",
-//     credentials: true,
-//   },
-// });
 app.use("/public", express.static(path.join(__dirname, "./public")));
 app.use(
   cors({
@@ -46,8 +39,7 @@ app.use(
 //http logger
 
 app.use(routes);
-
-const server = app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
@@ -57,6 +49,17 @@ const io = require("socket.io")(server, {
     credentials: true,
   },
 });
+
+// const server = app.listen(port, () => {
+//   console.log(`Example app listening on port ${port}`);
+// });
+
+// const io = require("socket.io")(server, {
+//   cors: {
+//     origin: "*",
+//     credentials: true,
+//   },
+// });
 
 ///
 const rooms = {};
