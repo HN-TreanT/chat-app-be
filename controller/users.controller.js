@@ -64,13 +64,17 @@ const editUser = async (req, res) => {
   }
 };
 const getUserById = async (req, res) => {
-  const users = await User.findOne({
-    email: req.params.email,
-  });
-  if (!users) {
-    return responseInValid({ res, message: "not found user" });
+  try {
+    const users = await User.findOne({
+      email: req.params.email,
+    });
+    if (!users) {
+      return responseInValid({ res, message: "not found user" });
+    }
+    return responseSuccessWithData({ res, data: users });
+  } catch (err) {
+    return responseServerError({ res, err: err.message });
   }
-  return responseSuccessWithData({ res, data: users });
 };
 const register = async (req, res) => {
   try {
