@@ -13,7 +13,7 @@ async function connect() {
     );
     console.log("connect succeeded");
   } catch (e) {
-    console.log("connect fail", e.message);
+    console.log("connect fail", e);
   }
 }
 
